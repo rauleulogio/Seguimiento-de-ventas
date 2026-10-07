@@ -645,47 +645,65 @@ button:disabled {
     box-shadow: var(--shadow);
 }
 
-/* Color de fondo por tarjeta */
+/* Fondo de color por tarjeta (mismo estilo que el título, tonos moderados) */
 .kpi-blue {
-    background: linear-gradient(135deg, #eff6ff, #dbeafe);
-    border-color: #bfdbfe;
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
 }
 
 .kpi-green {
-    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-    border-color: #bbf7d0;
+    background: linear-gradient(135deg, #065f46 0%, #16a34a 100%);
 }
 
 .kpi-orange {
-    background: linear-gradient(135deg, #fffbeb, #fef3c7);
-    border-color: #fde68a;
+    background: linear-gradient(135deg, #9a4a0a 0%, #e8920c 100%);
 }
 
 .kpi-red {
-    background: linear-gradient(135deg, #fef2f2, #fee2e2);
-    border-color: #fecaca;
+    background: linear-gradient(135deg, #8f1d1d 0%, #d93535 100%);
 }
 
-/* El icono pasa a fondo blanco para que resalte sobre el color */
-.main-kpi-card .kpi-icon {
-    background: #fff;
-    box-shadow: 0 2px 6px rgba(16, 24, 40, 0.08);
+.kpi-blue,
+.kpi-green,
+.kpi-orange,
+.kpi-red {
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 8px 20px rgba(16, 24, 40, 0.12);
 }
 
-.kpi-blue .kpi-number   { color: #1d4ed8; }
-.kpi-green .kpi-number  { color: #15803d; }
-.kpi-orange .kpi-number { color: #b45309; }
-.kpi-red .kpi-number    { color: #b91c1c; }
+.kpi-blue:hover,
+.kpi-green:hover,
+.kpi-orange:hover,
+.kpi-red:hover {
+    box-shadow: 0 12px 26px rgba(16, 24, 40, 0.18);
+}
 
 .kpi-blue .kpi-label,
 .kpi-green .kpi-label,
 .kpi-orange .kpi-label,
-.kpi-red .kpi-label,
+.kpi-red .kpi-label {
+    color: rgba(255, 255, 255, 0.78);
+}
+
+.kpi-blue .kpi-number,
+.kpi-green .kpi-number,
+.kpi-orange .kpi-number,
+.kpi-red .kpi-number {
+    color: #fff;
+}
+
 .kpi-blue .kpi-description,
 .kpi-green .kpi-description,
 .kpi-orange .kpi-description,
 .kpi-red .kpi-description {
-    color: #475467;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Icono con fondo translúcido para integrarse al color */
+.main-kpi-card .kpi-icon {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    box-shadow: none;
 }
 
 .kpi-top {
