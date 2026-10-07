@@ -645,6 +645,49 @@ button:disabled {
     box-shadow: var(--shadow);
 }
 
+/* Color de fondo por tarjeta */
+.kpi-blue {
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    border-color: #bfdbfe;
+}
+
+.kpi-green {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border-color: #bbf7d0;
+}
+
+.kpi-orange {
+    background: linear-gradient(135deg, #fffbeb, #fef3c7);
+    border-color: #fde68a;
+}
+
+.kpi-red {
+    background: linear-gradient(135deg, #fef2f2, #fee2e2);
+    border-color: #fecaca;
+}
+
+/* El icono pasa a fondo blanco para que resalte sobre el color */
+.main-kpi-card .kpi-icon {
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(16, 24, 40, 0.08);
+}
+
+.kpi-blue .kpi-number   { color: #1d4ed8; }
+.kpi-green .kpi-number  { color: #15803d; }
+.kpi-orange .kpi-number { color: #b45309; }
+.kpi-red .kpi-number    { color: #b91c1c; }
+
+.kpi-blue .kpi-label,
+.kpi-green .kpi-label,
+.kpi-orange .kpi-label,
+.kpi-red .kpi-label,
+.kpi-blue .kpi-description,
+.kpi-green .kpi-description,
+.kpi-orange .kpi-description,
+.kpi-red .kpi-description {
+    color: #475467;
+}
+
 .kpi-top {
     display: flex;
     align-items: center;
