@@ -84,7 +84,7 @@ const REQUIRED_COLUMNS = ["n", "nombre", "dni", "estado"];
 
 const MAIN_COLUMNS = [
     { key: "n", label: "N°" },
-    { key: "horaVenta", label: "HORA VENTA" },
+    { key: "fechaVenta", label: "FECHA VENTA" },
     { key: "dni", label: "DNI" },
     { key: "nombre", label: "NOMBRE" },
     { key: "rango", label: "RANGO" },
