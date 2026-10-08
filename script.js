@@ -1611,7 +1611,8 @@ function calculateProjection(currentSales) {
         "projectionTableau",
         tableauAmount,
         tableauRule,
-        tableauRule ? `Alcance ${formatPercentage(tableauStats.alcance)}` : "",
+        tableauStats.alcance,
+        `${tableauStats.active} de ${tableauStats.total} órdenes OT activas`,
         "Sin órdenes OT en la hoja"
     );
 
@@ -1619,7 +1620,8 @@ function calculateProjection(currentSales) {
         "projectionMultipedido",
         multiAmount,
         multiRule,
-        multiRule ? `Alcance ${formatPercentage(multiAlcance)}` : "",
+        multiAlcance,
+        `${multiActive} multipedido activas de ${activeCount} activas`,
         "Sin ventas activas"
     );
 
@@ -1645,7 +1647,8 @@ function calculateProjection(currentSales) {
     renderCommissionTable(currentRange, activeCount);
 }
 
-function renderAdjustment(id, amount, rule, alcanceText, emptyText) {
+/* Caja de ajuste: monto, alcance a la izquierda y bono/castigo a la derecha */
+function renderAdjustment(id, amount, rule, alcance, detail, emptyText) {
     const value = $(id);
 
     if (value) {
@@ -1654,19 +1657,38 @@ function renderAdjustment(id, amount, rule, alcanceText, emptyText) {
         value.classList.toggle("is-negative", amount < 0);
     }
 
-    let note = emptyText;
+    const effect = $(`${id}Effect`);
 
-    if (rule) {
-        const effect = rule.pct > 0
-            ? `bono +${rule.pct}%`
-            : rule.pct < 0
-                ? `castigo ${rule.pct}%`
-                : "sin ajuste";
+    if (!rule) {
+        setText(`${id}Alcance`, "Alcance: —");
+        setText(`${id}Note`, emptyText);
 
-        note = `${alcanceText} · ${effect}`;
+        if (effect) {
+            effect.textContent = "";
+            effect.className = "commission-effect";
+        }
+
+        return;
     }
 
-    setText(`${id}Note`, note);
+    let text = "No se aplica descuento";
+    let kind = "neutral";
+
+    if (rule.pct > 0) {
+        text = `Bono: +${rule.pct}%`;
+        kind = "bonus";
+    } else if (rule.pct < 0) {
+        text = `Castigo: -${Math.abs(rule.pct)}%`;
+        kind = "penalty";
+    }
+
+    setText(`${id}Alcance`, `Alcance: ${formatPercentage(alcance)}`);
+    setText(`${id}Note`, detail);
+
+    if (effect) {
+        effect.textContent = text;
+        effect.className = `commission-effect effect-${kind}`;
+    }
 }
 
 function renderCommissionTable(currentRange, activeCount) {

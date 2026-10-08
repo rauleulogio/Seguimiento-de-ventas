@@ -1299,9 +1299,30 @@ button:disabled {
 
 .projection-breakdown {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
     margin-top: 18px;
+}
+
+.commission-box-adjust,
+.commission-total {
+    grid-column: 1 / -1;
+}
+
+/* Pantallas anchas: 4 cajas arriba y 3 abajo (Tableau, Multipedido, Total) */
+@media (min-width: 901px) {
+    .projection-breakdown {
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+    }
+
+    .commission-box {
+        grid-column: span 3;
+    }
+
+    .commission-box-adjust,
+    .commission-total {
+        grid-column: span 4;
+    }
 }
 
 .commission-box {
@@ -1332,6 +1353,37 @@ button:disabled {
     line-height: 1.3;
     color: var(--text-soft);
 }
+
+.commission-detail {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    margin-top: 2px;
+}
+
+.commission-alcance {
+    font-size: 12px;
+    font-weight: 700;
+    color: #344054;
+}
+
+.commission-effect {
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.commission-effect:empty {
+    display: none;
+}
+
+.effect-bonus   { background: #dcfce7; color: #15803d; }
+.effect-penalty { background: #fee2e2; color: #b91c1c; }
+.effect-neutral { background: #f2f4f7; color: #475467; }
 
 .commission-box strong.is-positive {
     color: var(--green);

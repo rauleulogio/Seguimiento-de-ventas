@@ -8,8 +8,8 @@
     <meta name="description" content="Panel de control de ventas, productividad por canal y proyección de comisiones.">
     <meta name="theme-color" content="#2563eb">
 
-    <link rel="stylesheet" href="style.css?v=20261008c">
-    <script src="script.js?v=20261008c" defer></script>
+    <link rel="stylesheet" href="style.css?v=20261008d">
+    <script src="script.js?v=20261008d" defer></script>
 </head>
 
 <body>
@@ -1029,13 +1029,21 @@
                 </div>
 
 
-                <div class="commission-box">
+                <div class="commission-box commission-box-adjust">
 
                     <span>TABLEAU</span>
 
                     <strong id="projectionTableau">
                         S/ 0.00
                     </strong>
+
+                    <div class="commission-detail">
+                        <span class="commission-alcance" id="projectionTableauAlcance">
+                            Alcance: —
+                        </span>
+
+                        <span class="commission-effect" id="projectionTableauEffect"></span>
+                    </div>
 
                     <small id="projectionTableauNote">
                         Calculando...
@@ -1044,13 +1052,21 @@
                 </div>
 
 
-                <div class="commission-box">
+                <div class="commission-box commission-box-adjust">
 
                     <span>MULTIPEDIDO</span>
 
                     <strong id="projectionMultipedido">
                         S/ 0.00
                     </strong>
+
+                    <div class="commission-detail">
+                        <span class="commission-alcance" id="projectionMultipedidoAlcance">
+                            Alcance: —
+                        </span>
+
+                        <span class="commission-effect" id="projectionMultipedidoEffect"></span>
+                    </div>
 
                     <small id="projectionMultipedidoNote">
                         Calculando...
