@@ -1364,7 +1364,8 @@ function renderTiendaKPI(rows) {
     const stats = summarize(rows);
 
     setLine("tiendaActivas", stats.active, stats.total);
-    setLine("tiendaCanceladas", stats.noRecoge, stats.total);
+    /* Canceladas = canceladas + "no recoge", igual que en el resto del panel */
+    setLine("tiendaNoRecoge", stats.cancelled, stats.total);
     setLine("tiendaProgreso", stats.progress, stats.total);
 
     setText("tiendaEfectividadQ", stats.total);
