@@ -1011,8 +1011,20 @@ button:disabled {
 
 .monitor-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 18px;
+}
+
+@media (min-width: 1500px) {
+    .monitor-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+.monitor-note {
+    margin-top: 14px;
+    font-size: 11px;
+    color: var(--text-light);
 }
 
 .monitor-card {
@@ -1031,6 +1043,7 @@ button:disabled {
 .monitor-blue   { --accent: var(--primary); --accent-soft: var(--primary-soft); }
 .monitor-purple { --accent: var(--purple);  --accent-soft: var(--purple-soft); }
 .monitor-green  { --accent: var(--green);   --accent-soft: var(--green-soft); }
+.monitor-orange { --accent: #d97706;        --accent-soft: var(--orange-soft); }
 
 .monitor-header {
     display: flex;
@@ -1147,6 +1160,7 @@ button:disabled {
 .pie-purple { --accent: var(--purple); }
 .pie-green  { --accent: var(--green); }
 .pie-gray   { --accent: var(--gray); }
+.pie-orange { --accent: #d97706; }
 
 .pie-inner {
     width: 100%;
@@ -1285,7 +1299,7 @@ button:disabled {
 
 .projection-breakdown {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 12px;
     margin-top: 18px;
 }
@@ -1311,6 +1325,20 @@ button:disabled {
 .commission-box strong {
     font-size: 16px;
     font-weight: 900;
+}
+
+.commission-box small {
+    font-size: 10px;
+    line-height: 1.3;
+    color: var(--text-soft);
+}
+
+.commission-box strong.is-positive {
+    color: var(--green);
+}
+
+.commission-box strong.is-negative {
+    color: var(--red);
 }
 
 .commission-total {
@@ -1602,10 +1630,6 @@ button:disabled {
 
     .projection-main {
         grid-column: 1 / -1;
-    }
-
-    .projection-breakdown {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
 

@@ -799,6 +799,80 @@
 
                 </article>
 
+                <!-- ================= TABLEAU ================= -->
+                <article class="monitor-card monitor-orange">
+
+                    <div class="monitor-header">
+
+                        <div>
+                            <span class="monitor-tag">CONVERSIÓN</span>
+                            <h4>Tableau</h4>
+                        </div>
+
+                        <span class="monitor-badge">
+                            ÓRDENES OT
+                        </span>
+
+                    </div>
+
+
+                    <div class="monitor-content">
+
+                        <div class="monitor-table">
+
+                            <div class="monitor-line">
+                                <span>Activas</span>
+                                <strong id="tableauActivasQ">0</strong>
+                                <small id="tableauActivasPct">0%</small>
+                            </div>
+
+                            <div class="monitor-line">
+                                <span>Canceladas</span>
+                                <strong id="tableauCanceladasQ">0</strong>
+                                <small id="tableauCanceladasPct">0%</small>
+                            </div>
+
+                            <div class="monitor-line">
+                                <span>En progreso</span>
+                                <strong id="tableauProgresoQ">0</strong>
+                                <small id="tableauProgresoPct">0%</small>
+                            </div>
+
+                            <div class="monitor-line monitor-highlight">
+                                <span>Total OT</span>
+                                <strong id="tableauTotalQ">0</strong>
+                                <small id="tableauTotalPct">0%</small>
+                            </div>
+
+                        </div>
+
+
+                        <div class="pie-group">
+
+                            <div id="chartTableau" class="pie-3d pie-orange">
+                                <div class="pie-inner">
+                                    <strong class="pie-value">0%</strong>
+                                    <span class="pie-label">ACTIVAS</span>
+                                </div>
+                            </div>
+
+                            <div id="chartTableauTotal" class="pie-3d pie-gray">
+                                <div class="pie-inner">
+                                    <strong class="pie-value">0</strong>
+                                    <span class="pie-label">TOTAL OT</span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <p class="monitor-note">
+                        El 100% es la suma de órdenes de la columna ORDEN OT, no el total de ventas.
+                    </p>
+
+                </article>
+
             </div>
 
         </section>
@@ -954,6 +1028,36 @@
                     <strong id="projectionMulti">
                         S/ 0.00
                     </strong>
+
+                </div>
+
+
+                <div class="commission-box">
+
+                    <span>TABLEAU</span>
+
+                    <strong id="projectionTableau">
+                        S/ 0.00
+                    </strong>
+
+                    <small id="projectionTableauNote">
+                        Sin datos
+                    </small>
+
+                </div>
+
+
+                <div class="commission-box">
+
+                    <span>MULTIPEDIDO</span>
+
+                    <strong id="projectionMultipedido">
+                        S/ 0.00
+                    </strong>
+
+                    <small id="projectionMultipedidoNote">
+                        Sin datos
+                    </small>
 
                 </div>
 

@@ -183,6 +183,31 @@ const COMMISSION_RANGES = [
 const TOP_RANGE = COMMISSION_RANGES[COMMISSION_RANGES.length - 1];
 const TARGET_SALES = TOP_RANGE.from;
 
+/*
+   AJUSTES DE LA COMISIÓN (castigos y bonificadores)
+   - El % se aplica sobre la comisión base (POS MONO + ALTA + PREPAGO + MULTI).
+   - Se evalúan de arriba hacia abajo; gana la primera regla que cumple.
+*/
+
+/* Tableau: alcance = órdenes OT activas / total de órdenes OT */
+const TABLEAU_RULES = [
+    { min: 80,        pct: 15,  label: "≥ 80%" },
+    { min: 75,        pct: 5,   label: "≥ 75%" },
+    { min: 70,        pct: -5,  label: "< 75%" },
+    { min: -Infinity, pct: -15, label: "< 70%" }
+];
+
+/* Multipedido: alcance = ventas multipedido activas / ventas activas */
+const MULTI_RULES = [
+    { min: 35,        pct: 0,   label: "≥ 35%" },
+    { min: 30,        pct: -5,  label: "< 35%" },
+    { min: -Infinity, pct: -10, label: "< 30%" }
+];
+
+function findRule(rules, value) {
+    return rules.find(rule => value >= rule.min);
+}
+
 
 /* ============================================================
    UTILIDADES
@@ -262,6 +287,13 @@ const moneyFormatter = new Intl.NumberFormat("es-PE", {
 
 function formatMoney(value) {
     return moneyFormatter.format(value || 0);
+}
+
+function formatSignedMoney(value) {
+    if (value > 0) return `+${formatMoney(value)}`;
+    if (value < 0) return `−${formatMoney(Math.abs(value))}`;
+
+    return formatMoney(0);
 }
 
 function formatDateValue(value) {
@@ -380,6 +412,13 @@ function computeColumnIndex(aliases, occurrence) {
         }
     });
 
+    /* "last": la última columna con ese nombre (ej. el ORDEN OT del final) */
+    if (occurrence === "last") {
+        const list = exact.length ? exact : partial;
+
+        return list.length ? list[list.length - 1] : -1;
+    }
+
     if (exact.length >= occurrence) {
         return exact[occurrence - 1];
     }
@@ -495,6 +534,30 @@ function getOperationalStatus(row) {
     );
 }
 
+/*
+   Cantidad de órdenes OT de una venta, leída de la ÚLTIMA columna "ORDEN OT".
+   - Número chico (1, 2, 3...): es la cantidad de órdenes.
+   - Uno o varios números largos (ids de orden): cuenta cada id.
+   - Vacío: 0 órdenes.
+*/
+function getOtCount(row) {
+    const raw = getValue(row, "ordenOT", "last");
+
+    if (!raw) {
+        return 0;
+    }
+
+    const small = raw.match(/^\s*(\d{1,3})(?!\d)/);
+
+    if (small) {
+        return parseInt(small[1], 10);
+    }
+
+    const ids = raw.match(/\d{6,}/g);
+
+    return ids ? ids.length : 0;
+}
+
 function getChannel(row) {
     const combined = normalize(
         `${getValue(row, "tipoDespacho")} ${getValue(row, "modalidad")}`
@@ -572,6 +635,7 @@ function buildSale(row) {
         channel: getChannel(row),
         isMulti: productText.includes("MULTI"),
         commissionType: getCommissionType(productText),
+        otCount: getOtCount(row),
         fields,
         searchText
     };
@@ -658,6 +722,16 @@ async function cargarDatos(showToastMessage = false) {
 
         if (missing.length) {
             console.warn("Columnas no encontradas en la hoja:", missing);
+        }
+
+        const otColumns = headers
+            .map(normalizeHeader)
+            .filter(header => header === "ORDEN OT").length;
+
+        if (otColumns < 2) {
+            console.warn(
+                "Solo hay una columna ORDEN OT: Tableau contará 1 orden por venta con número de orden."
+            );
         }
 
         sales = parsed
@@ -1358,6 +1432,44 @@ function calculateChannelKPIs(currentSales) {
     renderTiendaKPI(currentSales.filter(sale => sale.channel === "tienda"));
     renderMultipedidoKPI(currentSales.filter(sale => sale.isMulti));
     renderDeliveryKPI(currentSales.filter(sale => sale.channel === "delivery"));
+    renderTableauKPI(currentSales);
+}
+
+/* Tableau: el 100% es la suma de órdenes OT (no el número de ventas) */
+function getTableauStats(list) {
+    const stats = { total: 0, active: 0, cancelled: 0, progress: 0 };
+
+    for (const sale of list) {
+        const orders = sale.otCount;
+
+        if (!orders) {
+            continue;
+        }
+
+        stats.total += orders;
+
+        if (sale.status === "active") stats.active += orders;
+        else if (sale.status === "progress") stats.progress += orders;
+        else stats.cancelled += orders; /* cancelada + no recoge */
+    }
+
+    stats.alcance = percentage(stats.active, stats.total);
+
+    return stats;
+}
+
+function renderTableauKPI(list) {
+    const stats = getTableauStats(list);
+
+    setLine("tableauActivas", stats.active, stats.total);
+    setLine("tableauCanceladas", stats.cancelled, stats.total);
+    setLine("tableauProgreso", stats.progress, stats.total);
+
+    setText("tableauTotalQ", stats.total);
+    setText("tableauTotalPct", stats.total ? "100%" : "0%");
+
+    setPie("chartTableau", stats.alcance, formatPercentage(stats.alcance), "ACTIVAS");
+    setPie("chartTableauTotal", stats.total > 0 ? 100 : 0, stats.total, "TOTAL OT");
 }
 
 function renderTiendaKPI(rows) {
@@ -1436,8 +1548,26 @@ function calculateProjection(currentSales) {
         totals[sale.commissionType] += pricingRange[sale.commissionType];
     });
 
-    const totalCommission =
+    const baseCommission =
         totals.pos + totals.alta + totals.prepago + totals.multi;
+
+    /* Ajuste por Tableau (sobre órdenes OT) */
+    const tableauStats = getTableauStats(currentSales);
+    const tableauRule = tableauStats.total
+        ? findRule(TABLEAU_RULES, tableauStats.alcance)
+        : null;
+
+    /* Ajuste por Multipedido (sobre ventas activas) */
+    const multiActive = activeSales.filter(sale => sale.isMulti).length;
+    const multiAlcance = percentage(multiActive, activeCount);
+    const multiRule = activeCount
+        ? findRule(MULTI_RULES, multiAlcance)
+        : null;
+
+    const tableauAmount = baseCommission * ((tableauRule?.pct || 0) / 100);
+    const multiAmount = baseCommission * ((multiRule?.pct || 0) / 100);
+
+    const totalCommission = baseCommission + tableauAmount + multiAmount;
 
     const missing = Math.max(TARGET_SALES - activeCount, 0);
     const progressPct = Math.min(100, percentage(activeCount, TARGET_SALES));
@@ -1456,6 +1586,20 @@ function calculateProjection(currentSales) {
     setText("projectionAlta", formatMoney(totals.alta));
     setText("projectionPrepago", formatMoney(totals.prepago));
     setText("projectionMulti", formatMoney(totals.multi));
+
+    renderAdjustment(
+        "projectionTableau",
+        tableauAmount,
+        tableauRule,
+        tableauRule ? `Alcance ${formatPercentage(tableauStats.alcance)}` : ""
+    );
+
+    renderAdjustment(
+        "projectionMultipedido",
+        multiAmount,
+        multiRule,
+        multiRule ? `Alcance ${formatPercentage(multiAlcance)}` : ""
+    );
 
     setText(
         "projectionNote",
@@ -1477,6 +1621,30 @@ function calculateProjection(currentSales) {
     }
 
     renderCommissionTable(currentRange, activeCount);
+}
+
+function renderAdjustment(id, amount, rule, alcanceText) {
+    const value = $(id);
+
+    if (value) {
+        value.textContent = formatSignedMoney(amount);
+        value.classList.toggle("is-positive", amount > 0);
+        value.classList.toggle("is-negative", amount < 0);
+    }
+
+    let note = "Sin datos";
+
+    if (rule) {
+        const effect = rule.pct > 0
+            ? `bono +${rule.pct}%`
+            : rule.pct < 0
+                ? `castigo ${rule.pct}%`
+                : "sin ajuste";
+
+        note = `${alcanceText} · ${effect}`;
+    }
+
+    setText(`${id}Note`, note);
 }
 
 function renderCommissionTable(currentRange, activeCount) {
