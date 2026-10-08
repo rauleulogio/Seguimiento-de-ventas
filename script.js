@@ -558,6 +558,32 @@ function getOtCount(row) {
     return ids ? ids.length : 0;
 }
 
+function columnLetter(index) {
+    let number = index + 1;
+    let letters = "";
+
+    while (number > 0) {
+        const remainder = (number - 1) % 26;
+
+        letters = String.fromCharCode(65 + remainder) + letters;
+        number = Math.floor((number - 1) / 26);
+    }
+
+    return letters;
+}
+
+/* Indica de qué columna se están leyendo las órdenes OT (ayuda a verificar) */
+function actualizarNotaTableau() {
+    const index = findColumnIndex(resolveAliases("ordenOT"), "last");
+
+    setText(
+        "tableauNote",
+        index < 0
+            ? "No se encontró la columna ORDEN OT en la hoja."
+            : `Órdenes leídas de la columna ${columnLetter(index)} (${headers[index]}). El 100% es la suma de esas órdenes, no el total de ventas.`
+    );
+}
+
 function getChannel(row) {
     const combined = normalize(
         `${getValue(row, "tipoDespacho")} ${getValue(row, "modalidad")}`
@@ -739,6 +765,10 @@ async function cargarDatos(showToastMessage = false) {
             .filter(isRealSale)
             .map(buildSale);
 
+        actualizarNotaTableau();
+
+        const totalOt = sales.reduce((sum, sale) => sum + sale.otCount, 0);
+
         cargarFiltros();
         aplicarFiltros();
 
@@ -755,6 +785,10 @@ async function cargarDatos(showToastMessage = false) {
         if (missing.length) {
             mostrarToast(
                 `Faltan columnas en la hoja: ${missing.join(", ")}.`
+            );
+        } else if (sales.length && totalOt === 0) {
+            mostrarToast(
+                "No se leyeron órdenes en la columna ORDEN OT. Revisa la hoja."
             );
         } else if (showToastMessage) {
             mostrarToast(`Datos actualizados: ${sales.length} ventas.`);
@@ -1591,14 +1625,16 @@ function calculateProjection(currentSales) {
         "projectionTableau",
         tableauAmount,
         tableauRule,
-        tableauRule ? `Alcance ${formatPercentage(tableauStats.alcance)}` : ""
+        tableauRule ? `Alcance ${formatPercentage(tableauStats.alcance)}` : "",
+        "Sin órdenes OT en la hoja"
     );
 
     renderAdjustment(
         "projectionMultipedido",
         multiAmount,
         multiRule,
-        multiRule ? `Alcance ${formatPercentage(multiAlcance)}` : ""
+        multiRule ? `Alcance ${formatPercentage(multiAlcance)}` : "",
+        "Sin ventas activas"
     );
 
     setText(
@@ -1623,7 +1659,7 @@ function calculateProjection(currentSales) {
     renderCommissionTable(currentRange, activeCount);
 }
 
-function renderAdjustment(id, amount, rule, alcanceText) {
+function renderAdjustment(id, amount, rule, alcanceText, emptyText) {
     const value = $(id);
 
     if (value) {
@@ -1632,7 +1668,7 @@ function renderAdjustment(id, amount, rule, alcanceText) {
         value.classList.toggle("is-negative", amount < 0);
     }
 
-    let note = "Sin datos";
+    let note = emptyText;
 
     if (rule) {
         const effect = rule.pct > 0
