@@ -204,8 +204,13 @@ const MULTI_RULES = [
     { min: -Infinity, pct: -10, label: "< 30%" }
 ];
 
+/* Redondea a 2 decimales para que 30% sea 30% y no 29.999999% */
+function round2(value) {
+    return Math.round(value * 100) / 100;
+}
+
 function findRule(rules, value) {
-    return rules.find(rule => value >= rule.min);
+    return rules.find(rule => round2(value) >= rule.min);
 }
 
 
@@ -558,32 +563,6 @@ function getOtCount(row) {
     return ids ? ids.length : 0;
 }
 
-function columnLetter(index) {
-    let number = index + 1;
-    let letters = "";
-
-    while (number > 0) {
-        const remainder = (number - 1) % 26;
-
-        letters = String.fromCharCode(65 + remainder) + letters;
-        number = Math.floor((number - 1) / 26);
-    }
-
-    return letters;
-}
-
-/* Indica de qué columna se están leyendo las órdenes OT (ayuda a verificar) */
-function actualizarNotaTableau() {
-    const index = findColumnIndex(resolveAliases("ordenOT"), "last");
-
-    setText(
-        "tableauNote",
-        index < 0
-            ? "No se encontró la columna ORDEN OT en la hoja."
-            : `Órdenes leídas de la columna ${columnLetter(index)} (${headers[index]}). El 100% es la suma de esas órdenes, no el total de ventas.`
-    );
-}
-
 function getChannel(row) {
     const combined = normalize(
         `${getValue(row, "tipoDespacho")} ${getValue(row, "modalidad")}`
@@ -612,8 +591,16 @@ function getProductText(row) {
     );
 }
 
-function getCommissionType(productText) {
-    if (productText.includes("MULTI")) {
+/*
+   Multipedido = la columna TIPO OFREC. dice MULTILINEA (X2, X3, X4, X5...).
+   Una venta regular solo dice "REGULAR" y nunca cuenta como multipedido.
+*/
+function isMultipedido(row) {
+    return /MULTI\s*LINEA/.test(normalize(getValue(row, "tipoOfrec")));
+}
+
+function getCommissionType(productText, isMulti) {
+    if (isMulti) {
         return "multi";
     }
 
@@ -634,6 +621,7 @@ function getCommissionType(productText) {
 */
 function buildSale(row) {
     const productText = getProductText(row);
+    const isMulti = isMultipedido(row);
 
     const searchText = [
         "n", "fechaVenta", "horaVenta", "dni", "nombre", "distrito",
@@ -659,8 +647,8 @@ function buildSale(row) {
         row,
         status: getOperationalStatus(row),
         channel: getChannel(row),
-        isMulti: productText.includes("MULTI"),
-        commissionType: getCommissionType(productText),
+        isMulti,
+        commissionType: getCommissionType(productText, isMulti),
         otCount: getOtCount(row),
         fields,
         searchText
@@ -764,8 +752,6 @@ async function cargarDatos(showToastMessage = false) {
             .slice(1)
             .filter(isRealSale)
             .map(buildSale);
-
-        actualizarNotaTableau();
 
         const totalOt = sales.reduce((sum, sale) => sum + sale.otCount, 0);
 
