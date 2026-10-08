@@ -1304,8 +1304,7 @@ button:disabled {
     margin-top: 18px;
 }
 
-.commission-box-adjust,
-.commission-total {
+.commission-box-adjust {
     grid-column: 1 / -1;
 }
 
@@ -1319,9 +1318,8 @@ button:disabled {
         grid-column: span 3;
     }
 
-    .commission-box-adjust,
-    .commission-total {
-        grid-column: span 4;
+    .commission-box-adjust {
+        grid-column: span 6;
     }
 }
 
@@ -1384,6 +1382,7 @@ button:disabled {
 .effect-bonus   { background: #dcfce7; color: #15803d; }
 .effect-penalty { background: #fee2e2; color: #b91c1c; }
 .effect-neutral { background: #f2f4f7; color: #475467; }
+.effect-price   { background: var(--primary-soft); color: var(--primary-dark); }
 
 .commission-box strong.is-positive {
     color: var(--green);

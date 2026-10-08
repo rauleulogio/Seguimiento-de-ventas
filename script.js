@@ -1563,9 +1563,11 @@ function calculateProjection(currentSales) {
     const pricingRange = currentRange || COMMISSION_RANGES[0];
 
     const totals = { pos: 0, alta: 0, prepago: 0, multi: 0 };
+    const counts = { pos: 0, alta: 0, prepago: 0, multi: 0 };
 
     activeSales.forEach(sale => {
         totals[sale.commissionType] += pricingRange[sale.commissionType];
+        counts[sale.commissionType]++;
     });
 
     const baseCommission =
@@ -1601,11 +1603,26 @@ function calculateProjection(currentSales) {
     setText("projectionMissingRange", missing);
 
     setText("projectionTotal", formatMoney(totalCommission));
-    setText("projectionTotalBottom", formatMoney(totalCommission));
     setText("projectionPos", formatMoney(totals.pos));
     setText("projectionAlta", formatMoney(totals.alta));
     setText("projectionPrepago", formatMoney(totals.prepago));
     setText("projectionMulti", formatMoney(totals.multi));
+
+    /* Cuántas ventas de cada tipo y cuánto vale cada una según el rango */
+    const rangeLabel = currentRange
+        ? `Tarifa Rango ${currentRange.range}`
+        : `Tarifa Rango ${pricingRange.range} (referencia)`;
+
+    [
+        ["projectionPos", "pos"],
+        ["projectionAlta", "alta"],
+        ["projectionPrepago", "prepago"],
+        ["projectionMulti", "multi"]
+    ].forEach(([id, type]) => {
+        setText(`${id}Count`, `${counts[type]} ${counts[type] === 1 ? "venta" : "ventas"}`);
+        setText(`${id}Price`, `${formatMoney(pricingRange[type])} c/u`);
+        setText(`${id}Note`, rangeLabel);
+    });
 
     renderAdjustment(
         "projectionTableau",
