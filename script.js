@@ -491,6 +491,10 @@ function isRealSale(row) {
 
 /* Clasifica un texto de estado. Devuelve null si no reconoce nada. */
 function classifyStatusText(text) {
+    if (/OBSERV/.test(text)) {
+        return "observed";
+    }
+
     /* \b evita que "INACTIVO" o "INVALIDO" cuenten como activas */
     if (
         /\b(ACTIV|VALID)/.test(text) &&
@@ -507,7 +511,7 @@ function classifyStatusText(text) {
 }
 
 /*
-   Devuelve: "cancelled" | "noRecoge" | "active" | "progress"
+   Devuelve: "cancelled" | "noRecoge" | "active" | "progress" | "observed"
 
    - Cancelada / No recoge: se detecta en cualquiera de las columnas
      de estado (como antes).
@@ -517,6 +521,11 @@ function classifyStatusText(text) {
 */
 function getOperationalStatus(row) {
     const estado = normalize(getValue(row, "estado"));
+
+    /* OBSERVADA: manda la columna ESTADO */
+    if (/OBSERV/.test(estado)) {
+        return "observed";
+    }
 
     const combined = [
         estado,
@@ -661,6 +670,7 @@ function summarize(list) {
         total: list.length,
         active: 0,
         progress: 0,
+        observed: 0,
         cancelledOnly: 0,
         noRecoge: 0
     };
@@ -668,6 +678,7 @@ function summarize(list) {
     for (const sale of list) {
         if (sale.status === "active") result.active++;
         else if (sale.status === "progress") result.progress++;
+        else if (sale.status === "observed") result.observed++;
         else if (sale.status === "cancelled") result.cancelledOnly++;
         else if (sale.status === "noRecoge") result.noRecoge++;
     }
@@ -1187,6 +1198,7 @@ function actualizarKPIs() {
     setText("kpiTotal", stats.total);
     setText("kpiActive", stats.active);
     setText("kpiProgress", stats.progress);
+    setText("kpiObserved", stats.observed);
     setText("kpiCancelled", stats.cancelled);
 }
 
@@ -1316,6 +1328,8 @@ function renderStatus(value) {
         className = "status-cancelled";
     } else if (/\b(ACTIV|VALID)/.test(normalized)) {
         className = "status-active";
+    } else if (/OBSERV/.test(normalized)) {
+        className = "status-observed";
     } else if (/PROGRES|PENDIENT/.test(normalized)) {
         className = "status-progress";
     }
@@ -1401,6 +1415,7 @@ function renderAnalytics() {
     const rows = [
         ["Active", stats.active],
         ["Progress", stats.progress],
+        ["Observed", stats.observed],
         ["Cancelled", stats.cancelled]
     ];
 
@@ -1457,7 +1472,7 @@ function calculateChannelKPIs(currentSales) {
 
 /* Tableau: el 100% es la suma de órdenes OT (no el número de ventas) */
 function getTableauStats(list) {
-    const stats = { total: 0, active: 0, cancelled: 0, progress: 0 };
+    const stats = { total: 0, active: 0, cancelled: 0, progress: 0, observed: 0 };
 
     for (const sale of list) {
         const orders = sale.otCount;
@@ -1470,6 +1485,7 @@ function getTableauStats(list) {
 
         if (sale.status === "active") stats.active += orders;
         else if (sale.status === "progress") stats.progress += orders;
+        else if (sale.status === "observed") stats.observed += orders;
         else stats.cancelled += orders; /* cancelada + no recoge */
     }
 
