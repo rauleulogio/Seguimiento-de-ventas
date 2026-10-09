@@ -189,8 +189,8 @@ const TARGET_SALES = TOP_RANGE.from;
    - Se evalúan de arriba hacia abajo; gana la primera regla que cumple.
 */
 
-/* Tableau: alcance = órdenes OT activas / total de órdenes OT */
-const TABLEAU_RULES = [
+/* Tableu: alcance = órdenes OT activas / total de órdenes OT */
+const TABLEU_RULES = [
     { min: 80,        pct: 15,  label: "≥ 80%" },
     { min: 75,        pct: 5,   label: "≥ 75%" },
     { min: 70,        pct: -5,  label: "< 75%" },
@@ -755,7 +755,7 @@ async function cargarDatos(showToastMessage = false) {
 
         if (otColumns < 2) {
             console.warn(
-                "Solo hay una columna ORDEN OT: Tableau contará 1 orden por venta con número de orden."
+                "Solo hay una columna ORDEN OT: Tableu contará 1 orden por venta con número de orden."
             );
         }
 
@@ -1467,11 +1467,11 @@ function calculateChannelKPIs(currentSales) {
     renderTiendaKPI(currentSales.filter(sale => sale.channel === "tienda"));
     renderMultipedidoKPI(currentSales.filter(sale => sale.isMulti));
     renderDeliveryKPI(currentSales.filter(sale => sale.channel === "delivery"));
-    renderTableauKPI(currentSales);
+    renderTableuKPI(currentSales);
 }
 
-/* Tableau: el 100% es la suma de órdenes OT (no el número de ventas) */
-function getTableauStats(list) {
+/* Tableu: el 100% es la suma de órdenes OT (no el número de ventas) */
+function getTableuStats(list) {
     const stats = { total: 0, active: 0, cancelled: 0, progress: 0, observed: 0 };
 
     for (const sale of list) {
@@ -1494,18 +1494,18 @@ function getTableauStats(list) {
     return stats;
 }
 
-function renderTableauKPI(list) {
-    const stats = getTableauStats(list);
+function renderTableuKPI(list) {
+    const stats = getTableuStats(list);
 
-    setLine("tableauActivas", stats.active, stats.total);
-    setLine("tableauCanceladas", stats.cancelled, stats.total);
-    setLine("tableauProgreso", stats.progress, stats.total);
+    setLine("tableuActivas", stats.active, stats.total);
+    setLine("tableuCanceladas", stats.cancelled, stats.total);
+    setLine("tableuProgreso", stats.progress, stats.total);
 
-    setText("tableauTotalQ", stats.total);
-    setText("tableauTotalPct", stats.total ? "100%" : "0%");
+    setText("tableuTotalQ", stats.total);
+    setText("tableuTotalPct", stats.total ? "100%" : "0%");
 
-    setPie("chartTableau", stats.alcance, formatPercentage(stats.alcance), "ACTIVAS");
-    setPie("chartTableauTotal", stats.total > 0 ? 100 : 0, stats.total, "TOTAL OT");
+    setPie("chartTableu", stats.alcance, formatPercentage(stats.alcance), "ACTIVAS");
+    setPie("chartTableuTotal", stats.total > 0 ? 100 : 0, stats.total, "TOTAL OT");
 }
 
 function renderTiendaKPI(rows) {
@@ -1589,10 +1589,10 @@ function calculateProjection(currentSales) {
     const baseCommission =
         totals.pos + totals.alta + totals.prepago + totals.multi;
 
-    /* Ajuste por Tableau (sobre órdenes OT) */
-    const tableauStats = getTableauStats(currentSales);
-    const tableauRule = tableauStats.total
-        ? findRule(TABLEAU_RULES, tableauStats.alcance)
+    /* Ajuste por Tableu (sobre órdenes OT) */
+    const tableuStats = getTableuStats(currentSales);
+    const tableuRule = tableuStats.total
+        ? findRule(TABLEU_RULES, tableuStats.alcance)
         : null;
 
     /* Ajuste por Multipedido (sobre ventas activas) */
@@ -1602,10 +1602,10 @@ function calculateProjection(currentSales) {
         ? findRule(MULTI_RULES, multiAlcance)
         : null;
 
-    const tableauAmount = baseCommission * ((tableauRule?.pct || 0) / 100);
+    const tableuAmount = baseCommission * ((tableuRule?.pct || 0) / 100);
     const multiAmount = baseCommission * ((multiRule?.pct || 0) / 100);
 
-    const totalCommission = baseCommission + tableauAmount + multiAmount;
+    const totalCommission = baseCommission + tableuAmount + multiAmount;
 
     const missing = Math.max(TARGET_SALES - activeCount, 0);
     const progressPct = Math.min(100, percentage(activeCount, TARGET_SALES));
@@ -1641,11 +1641,11 @@ function calculateProjection(currentSales) {
     });
 
     renderAdjustment(
-        "projectionTableau",
-        tableauAmount,
-        tableauRule,
-        tableauStats.alcance,
-        `${tableauStats.active} de ${tableauStats.total} órdenes OT activas`,
+        "projectionTableu",
+        tableuAmount,
+        tableuRule,
+        tableuStats.alcance,
+        `${tableuStats.active} de ${tableuStats.total} órdenes OT activas`,
         "Sin órdenes OT en la hoja"
     );
 
