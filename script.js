@@ -10,7 +10,7 @@
 ============================================================ */
 
 const CSV_URL =
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vS2dS4SShe8mxhPXlWqkzaYjhLzztRdNPaSy8shwiCx8U_bO_EGp3W8dbSYJfrc5qUmXGYHX9x87Y7I/pub?output=csv";
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vS2dS4SShe8mxhPXlWqkzaYjhLzztRdNPaSy8shwiCx8U_bO_EGp3W8dbSYJfrc5qUmXGYHX9x87Y7I/pub?gid=0&single=true&output=csv";
 
 const ROWS_PER_PAGE = 10;
 const REFRESH_INTERVAL = 60000;
